@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>University Voting System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; background-color: #0d0d0d; color: #ffffff; margin: 0; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; color: #0a0a0a; padding: 40px 50px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 3px solid #0a0a0a; padding-bottom: 15px; margin-bottom: 30px; }
+        label { font-weight: 500; display: block; margin-bottom: 8px; color: #333; }
+        input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; margin-bottom: 25px; border: 2px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-family: 'Outfit', sans-serif; font-size: 15px; transition: all 0.3s; background: #fafafa; }
+        input:focus { outline: none; border-color: #000000; background: #ffffff; }
+        button { background-color: #000000; color: #ffffff; padding: 14px 20px; border: 2px solid #000000; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; font-weight: 700; font-family: 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
+        button:hover { background-color: #ffffff; color: #000000; transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .alert { padding: 15px; margin-bottom: 25px; border: 1px solid transparent; border-radius: 8px; font-weight: 500; text-align: center; }
+        .alert-error { color: #ffffff; background-color: #e50000; }
+        .alert-success { color: #ffffff; background-color: #000000; border: 2px solid #000000; }
+        .nav { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; align-items: center; }
+        .nav span { font-weight: 500; }
+        .nav a { text-decoration: none; color: #000000; font-weight: 700; padding: 6px 12px; border: 2px solid #000; border-radius: 6px; transition: all 0.2s; }
+        .nav a:hover { background: #000; color: #fff; }
+        .candidate-card { border: 2px solid #000000; padding: 20px; margin-bottom: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; transition: all 0.3s ease; }
+        .candidate-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .candidate-card h4 { margin: 0; color: #000000; font-size: 18px; font-weight: 700; }
+        .candidate-card form { margin: 0; }
+        .candidate-card button { width: auto; padding: 10px 20px; margin: 0; font-size: 14px; }
+        .footer-text { text-align: center; margin-top: 25px; font-size: 14px; color: #555; }
+        .footer-text a { color: #000000; font-weight: 700; text-decoration: none; border-bottom: 1px solid #000; padding-bottom: 2px; transition: all 0.3s; }
+        .footer-text a:hover { color: #ffffff; background: #000000; }
+        p { text-align: center; font-weight: 500; margin-bottom: 25px; color: #444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if 'user' in session %}
+        <div class="nav">
+            <span>Welcome, <b>{{ session['user'] }}</b></span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+        {% else %}
+        <div class="nav" style="justify-content: flex-end; gap: 10px;">
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}" style="background: #000; color: #fff;">Sign Up</a>
+        </div>
+        {% endif %}
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>University Elections</h2>
+{% if has_voted %}
+    <div class="alert alert-success">You have successfully cast your vote. Thank you for participating!</div>
+{% else %}
+    <p>Please select a candidate below to cast your one-time vote:</p>
+    {% for candidate in candidates %}
+    <div class="candidate-card">
+        <h4>{{ candidate }}</h4>
+        <form method="POST" action="{{ url_for('vote') }}">
+            <input type="hidden" name="candidate" value="{{ candidate }}">
+            <button type="submit">Vote</button>
+        </form>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}
