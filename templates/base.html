@@ -4,8 +4,14 @@
     <title>University Voting System</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+
+        /* ── Base Reset ─────────────────────────────────────────── */
+        * { box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background-color: #0d0d0d; color: #ffffff; margin: 0; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: #ffffff; color: #0a0a0a; padding: 40px 50px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); width: 100%; max-width: 450px; }
+
+        /* ── Container (wider to fit 3 cards) ────────────────────── */
+        .container { background: #ffffff; color: #0a0a0a; padding: 40px 50px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); width: 100%; max-width: 900px; }
+
         h2 { text-align: center; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 3px solid #0a0a0a; padding-bottom: 15px; margin-bottom: 30px; }
         label { font-weight: 500; display: block; margin-bottom: 8px; color: #333; }
         input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; margin-bottom: 25px; border: 2px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-family: 'Outfit', sans-serif; font-size: 15px; transition: all 0.3s; background: #fafafa; }
@@ -19,15 +25,220 @@
         .nav span { font-weight: 500; }
         .nav a { text-decoration: none; color: #000000; font-weight: 700; padding: 6px 12px; border: 2px solid #000; border-radius: 6px; transition: all 0.2s; }
         .nav a:hover { background: #000; color: #fff; }
-        .candidate-card { border: 2px solid #000000; padding: 20px; margin-bottom: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; transition: all 0.3s ease; }
-        .candidate-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-        .candidate-card h4 { margin: 0; color: #000000; font-size: 18px; font-weight: 700; }
-        .candidate-card form { margin: 0; }
-        .candidate-card button { width: auto; padding: 10px 20px; margin: 0; font-size: 14px; }
         .footer-text { text-align: center; margin-top: 25px; font-size: 14px; color: #555; }
         .footer-text a { color: #000000; font-weight: 700; text-decoration: none; border-bottom: 1px solid #000; padding-bottom: 2px; transition: all 0.3s; }
         .footer-text a:hover { color: #ffffff; background: #000000; }
         p { text-align: center; font-weight: 500; margin-bottom: 25px; color: #444; }
+
+        /* ── Candidates Grid ────────────────────────────────────── */
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            .candidates-grid { grid-template-columns: 1fr; }
+            .container { max-width: 450px; padding: 30px 24px; }
+        }
+
+        /* ── Candidate Card ─────────────────────────────────────── */
+        .candidate-card {
+            border: 2px solid #e0e0e0;
+            padding: 28px 20px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fafafa;
+            transition: all 0.35s ease;
+            text-align: center;
+        }
+        .candidate-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+            border-color: #000;
+        }
+
+        /* ── Photo ──────────────────────────────────────────────── */
+        .candidate-photo-wrapper {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #000;
+            margin-bottom: 16px;
+            background: #e0e0e0;
+            flex-shrink: 0;
+        }
+        .candidate-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .candidate-avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            background: #000;
+        }
+
+        /* ── Name ───────────────────────────────────────────────── */
+        .candidate-name {
+            margin: 0 0 16px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Agenda Button ──────────────────────────────────────── */
+        .btn-agenda {
+            background: #ffffff;
+            color: #000;
+            border: 2px solid #000;
+            padding: 10px 20px;
+            font-size: 13px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .btn-agenda:hover {
+            background: #000;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ── Vote Button ────────────────────────────────────────── */
+        .btn-vote {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .btn-vote:hover {
+            background: #1a8f1a;
+            border-color: #1a8f1a;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26,143,26,0.3);
+        }
+        .candidate-card form { margin: 0; width: 100%; }
+
+        /* ── Modal Overlay ──────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+        .modal-content {
+            background: #fff;
+            color: #111;
+            border-radius: 16px;
+            padding: 36px;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            animation: slideUp 0.3s ease;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #888;
+            width: auto;
+            padding: 4px 8px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover { color: #000; background: none; transform: none; box-shadow: none; }
+        .modal-title {
+            margin: 0 0 20px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #000;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12px;
+        }
+        .modal-body { margin-bottom: 20px; }
+        .agenda-item {
+            text-align: left;
+            padding: 10px 14px;
+            margin: 8px 0;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 4px solid #000;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #222;
+        }
+        .modal-dismiss {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            transition: all 0.25s ease;
+        }
+        .modal-dismiss:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* ── Animations ─────────────────────────────────────────── */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
     </style>
 </head>
 <body>

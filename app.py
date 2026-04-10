@@ -11,6 +11,43 @@ app = Flask(__name__)
 # Use secret key from .env (falls back to a default for local dev)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super_secret_voting_key")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CANDIDATE CONFIGURATION — Edit name, photo filename, and agenda here easily.
+# Place photos in: static/images/<filename>
+# ─────────────────────────────────────────────────────────────────────────────
+CANDIDATES = [
+    {
+        "name": "Hemaditya",
+        "photo": "hemaditya.png",
+        "agenda": (
+            "🎓 Academic Excellence — Introduce peer tutoring programs and weekend study halls.\n"
+            "🌐 Digital Campus — Free high-speed Wi-Fi across all campus buildings and hostels.\n"
+            "💡 Innovation Hub — Set up a student startup incubator with seed funding.\n"
+            "🤝 Student Welfare — Monthly open forums with faculty for grievance redressal."
+        ),
+    },
+    {
+        "name": "Shyam Sunder",
+        "photo": "shyam_sunder.png",
+        "agenda": (
+            "🏋️ Sports & Fitness — New gym equipment and extended sports facilities timings.\n"
+            "📚 Library Upgrade — 24/7 library access during exam seasons with more resources.\n"
+            "🚌 Transport Reform — Better bus schedules and affordable cab-pooling initiative.\n"
+            "🎭 Cultural Fest — Larger budget and national-level participation for annual fest."
+        ),
+    },
+    {
+        "name": "Sai Teja",
+        "photo": "sai_teja.png",
+        "agenda": (
+            "♻️ Green Campus — Solar panels, recycling drives, and zero-plastic initiative.\n"
+            "💼 Placement Cell — Industry tie-ups and more on-campus recruitment drives.\n"
+            "🍽️ Canteen Quality — Healthier, affordable meal options and transparent pricing.\n"
+            "🛡️ Campus Safety — Better lighting in hostels, CCTV upgrades, and safety app."
+        ),
+    },
+]
+
 # Read AWS credentials and config from .env
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -161,10 +198,7 @@ def vote_page():
         flash(f"Error checking vote status: {str(e)}", "error")
         has_voted = False
 
-    # List of candidates available to vote for
-    candidates = ["Alice Smith", "Bob Johnson", "Charlie Davis"]
-
-    return render_template("vote.html", has_voted=has_voted, candidates=candidates)
+    return render_template("vote.html", has_voted=has_voted, candidates=CANDIDATES)
 
 
 @app.route("/cast_vote", methods=["POST"], endpoint="vote")
@@ -175,8 +209,10 @@ def cast_vote():
     email = session["user"]
     candidate = request.form.get("candidate")
 
-    if not candidate:
-        flash("No candidate selected.", "error")
+    # Validate the candidate against our configured list
+    valid_names = [c["name"] for c in CANDIDATES]
+    if not candidate or candidate not in valid_names:
+        flash("No valid candidate selected.", "error")
         return redirect(url_for("vote_page"))
 
     try:

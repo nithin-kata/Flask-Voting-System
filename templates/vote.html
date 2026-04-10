@@ -1,18 +1,98 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>University Elections</h2>
+
 {% if has_voted %}
-    <div class="alert alert-success">You have successfully cast your vote. Thank you for participating!</div>
-{% else %}
-    <p>Please select a candidate below to cast your one-time vote:</p>
-    {% for candidate in candidates %}
-    <div class="candidate-card">
-        <h4>{{ candidate }}</h4>
-        <form method="POST" action="{{ url_for('vote') }}">
-            <input type="hidden" name="candidate" value="{{ candidate }}">
-            <button type="submit">Vote</button>
-        </form>
+    <div class="alert alert-success">
+        <span style="font-size: 24px;">&#10003;</span>
+        <p style="margin: 10px 0 0;">You have successfully cast your vote. Thank you for participating!</p>
     </div>
-    {% endfor %}
+{% else %}
+    <p>Select your candidate and cast your one-time vote</p>
+
+    <div class="candidates-grid">
+        {% for candidate in candidates %}
+        <div class="candidate-card" id="card-{{ loop.index }}">
+            <!-- Candidate Photo -->
+            <div class="candidate-photo-wrapper">
+                <img
+                    src="{{ url_for('static', filename='images/' + candidate.photo) }}"
+                    alt="Photo of {{ candidate.name }}"
+                    class="candidate-photo"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <!-- Fallback avatar if image is missing -->
+                <div class="candidate-avatar-fallback" style="display:none;">
+                    {{ candidate.name[0] }}
+                </div>
+            </div>
+
+            <!-- Candidate Name -->
+            <h3 class="candidate-name">{{ candidate.name }}</h3>
+
+            <!-- View Agenda Button -->
+            <button
+                type="button"
+                class="btn-agenda"
+                onclick="openAgenda('{{ candidate.name }}', `{{ candidate.agenda }}`)"
+            >
+                📋 View Agenda
+            </button>
+
+            <!-- Vote Form -->
+            <form method="POST" action="{{ url_for('vote') }}">
+                <input type="hidden" name="candidate" value="{{ candidate.name }}">
+                <button type="submit" class="btn-vote" onclick="return confirm('Are you sure you want to vote for {{ candidate.name }}? This action cannot be undone.')">
+                    🗳️ Vote for {{ candidate.name }}
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
 {% endif %}
+
+<!-- Agenda Modal Popup -->
+<div class="modal-overlay" id="agendaModal" onclick="closeAgendaOutside(event)">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAgenda()">&times;</button>
+        <h3 class="modal-title" id="modalTitle">Candidate Agenda</h3>
+        <div class="modal-body" id="modalBody"></div>
+        <button class="modal-dismiss" onclick="closeAgenda()">Got it!</button>
+    </div>
+</div>
+
+<script>
+    function openAgenda(name, agenda) {
+        document.getElementById('modalTitle').textContent = name + "'s Agenda";
+        const body = document.getElementById('modalBody');
+        body.innerHTML = '';
+        const lines = agenda.split('\\n');
+        lines.forEach(function(line) {
+            if (line.trim()) {
+                const p = document.createElement('p');
+                p.className = 'agenda-item';
+                p.textContent = line.trim();
+                body.appendChild(p);
+            }
+        });
+        document.getElementById('agendaModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAgenda() {
+        document.getElementById('agendaModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function closeAgendaOutside(event) {
+        if (event.target === document.getElementById('agendaModal')) {
+            closeAgenda();
+        }
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeAgenda();
+    });
+</script>
 {% endblock %}
