@@ -194,11 +194,27 @@ def vote_page():
             return redirect(url_for("login"))
 
         has_voted = user.get("hasVoted", False)
+        voted_for = user.get("votedFor", None)
     except Exception as e:
         flash(f"Error checking vote status: {str(e)}", "error")
         has_voted = False
+        voted_for = None
 
-    return render_template("vote.html", has_voted=has_voted, candidates=CANDIDATES)
+    # Find the full candidate details for the one the user voted for
+    voted_candidate = None
+    if voted_for:
+        for c in CANDIDATES:
+            if c["name"] == voted_for:
+                voted_candidate = c
+                break
+
+    return render_template(
+        "vote.html",
+        has_voted=has_voted,
+        voted_for=voted_for,
+        voted_candidate=voted_candidate,
+        candidates=CANDIDATES,
+    )
 
 
 @app.route("/cast_vote", methods=["POST"], endpoint="vote")
@@ -222,9 +238,9 @@ def cast_vote():
 
         users_table.update_item(
             Key={"email": email},
-            UpdateExpression="SET hasVoted = :v",
+            UpdateExpression="SET hasVoted = :v, votedFor = :c",
             ConditionExpression="hasVoted = :f OR attribute_not_exists(hasVoted)",
-            ExpressionAttributeValues={":v": True, ":f": False},
+            ExpressionAttributeValues={":v": True, ":f": False, ":c": candidate},
         )
     except dynamodb_client.exceptions.ConditionalCheckFailedException:
         flash("Our records show you have already voted!", "error")

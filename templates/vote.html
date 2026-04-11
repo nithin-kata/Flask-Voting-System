@@ -3,9 +3,34 @@
 <h2>University Elections</h2>
 
 {% if has_voted %}
-    <div class="alert alert-success">
-        <span style="font-size: 24px;">&#10003;</span>
-        <p style="margin: 10px 0 0;">You have successfully cast your vote. Thank you for participating!</p>
+    <div class="voted-confirmation">
+        <div class="voted-badge">
+            <span class="voted-check">✓</span>
+            <span class="voted-label">Vote Recorded</span>
+        </div>
+
+        {% if voted_candidate %}
+        <p class="voted-subtitle">You voted for</p>
+        <div class="voted-candidate-card">
+            <div class="voted-photo-wrapper">
+                <img
+                    src="{{ url_for('static', filename='images/' + voted_candidate.photo) }}"
+                    alt="Photo of {{ voted_candidate.name }}"
+                    class="candidate-photo"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <div class="candidate-avatar-fallback" style="display:none;">
+                    {{ voted_candidate.name[0] }}
+                </div>
+            </div>
+            <h3 class="voted-candidate-name">{{ voted_candidate.name }}</h3>
+            <div class="voted-stamp">🗳️ Your Choice</div>
+        </div>
+        {% else %}
+        <p class="voted-subtitle">Your vote has been recorded. Thank you!</p>
+        {% endif %}
+
+        <p class="voted-thanks">Thank you for participating in the University Elections!</p>
     </div>
 {% else %}
     <p>Select your candidate and cast your one-time vote</p>
