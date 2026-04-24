@@ -4,144 +4,98 @@ from dotenv import load_dotenv
 import boto3
 import os
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-# Use secret key from .env (falls back to a default for local dev)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super_secret_voting_key")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CANDIDATE CONFIGURATION — Edit name, photo filename, and agenda here easily.
-# Place photos in: static/images/<filename>
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# CANDIDATES
+# ─────────────────────────────────────────────
 CANDIDATES = [
     {
         "name": "Hemaditya",
         "photo": "hemaditya.png",
-        "agenda": (
-            "🎓 Academic Excellence — Introduce peer tutoring programs and weekend study halls.\n"
-            "🌐 Digital Campus — Free high-speed Wi-Fi across all campus buildings and hostels.\n"
-            "💡 Innovation Hub — Set up a student startup incubator with seed funding.\n"
-            "🤝 Student Welfare — Monthly open forums with faculty for grievance redressal."
-        ),
+        "agenda": "Academic Excellence & Innovation Hub"
     },
     {
         "name": "Shyam Sunder",
         "photo": "shyam_sunder.png",
-        "agenda": (
-            "🏋️ Sports & Fitness — New gym equipment and extended sports facilities timings.\n"
-            "📚 Library Upgrade — 24/7 library access during exam seasons with more resources.\n"
-            "🚌 Transport Reform — Better bus schedules and affordable cab-pooling initiative.\n"
-            "🎭 Cultural Fest — Larger budget and national-level participation for annual fest."
-        ),
+        "agenda": "Sports, Library & Transport"
     },
     {
         "name": "Sai Teja",
         "photo": "sai_teja.png",
-        "agenda": (
-            "♻️ Green Campus — Solar panels, recycling drives, and zero-plastic initiative.\n"
-            "💼 Placement Cell — Industry tie-ups and more on-campus recruitment drives.\n"
-            "🍽️ Canteen Quality — Healthier, affordable meal options and transparent pricing.\n"
-            "🛡️ Campus Safety — Better lighting in hostels, CCTV upgrades, and safety app."
-        ),
+        "agenda": "Green Campus & Placements"
     },
 ]
 
-# Read AWS credentials and config from .env
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+# ─────────────────────────────────────────────
+# AWS CONFIG (IAM ROLE BASED — NO KEYS)
+# ─────────────────────────────────────────────
 REGION = os.environ.get("AWS_REGION", "ap-south-1")
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 
-# Configure AWS services using explicit credentials from .env
-dynamodb = boto3.resource(
-    "dynamodb",
-    region_name=REGION,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-)
-sns_client = boto3.client(
-    "sns",
-    region_name=REGION,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-)
+# ✅ No credentials here — uses IAM role automatically
+dynamodb = boto3.resource("dynamodb", region_name=REGION)
+sns_client = boto3.client("sns", region_name=REGION)
 
+def get_table(name):
+    return dynamodb.Table(name)
 
-# --- Helper to access tables ---
-def get_table(table_name):
-    return dynamodb.Table(table_name)
-
-
-# --- Routes ---
+# ─────────────────────────────────────────────
+# ROUTES
+# ─────────────────────────────────────────────
 @app.route("/")
 def index():
     if "user" in session:
         return redirect(url_for("vote_page"))
     return redirect(url_for("login"))
 
-
+# ───────── SIGNUP ─────────
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
 
-        # 1. Check if email exists in the authorized "Students" table
         try:
             students_table = get_table("Students")
-            response = students_table.get_item(Key={"email": email})
-            if "Item" not in response:
-                flash(
-                    "Signup denied: Your email is not in the student registry.", "error"
-                )
+            if "Item" not in students_table.get_item(Key={"email": email}):
+                flash("Email not authorized", "error")
                 return redirect(url_for("signup"))
-        except Exception as e:
-            flash(f"Error accessing Students table: {str(e)}", "error")
-            return redirect(url_for("signup"))
 
-        # 2. Check if user already registered in "Users" table
-        try:
             users_table = get_table("Users")
-            response = users_table.get_item(Key={"email": email})
-            if "Item" in response:
-                flash(
-                    "An account with this email already exists. Please log in.", "error"
-                )
+            if "Item" in users_table.get_item(Key={"email": email}):
+                flash("User already exists", "error")
                 return redirect(url_for("login"))
-        except Exception as e:
-            flash(f"Error accessing Users table: {str(e)}", "error")
-            return redirect(url_for("signup"))
 
-        # 3. Hash password and insert into "Users" table
-        try:
-            hashed_password = generate_password_hash(password)
             users_table.put_item(
-                Item={"email": email, "password": hashed_password, "hasVoted": False}
+                Item={
+                    "email": email,
+                    "password": generate_password_hash(password),
+                    "hasVoted": False
+                }
             )
-        except Exception as e:
-            flash(f"Error creating user: {str(e)}", "error")
-            return redirect(url_for("signup"))
 
-        # 4. Subscribe the new user's email to the SNS Topic
-        if SNS_TOPIC_ARN:
-            try:
+            if SNS_TOPIC_ARN:
                 sns_client.subscribe(
-                    TopicArn=SNS_TOPIC_ARN, Protocol="email", Endpoint=email
+                    TopicArn=SNS_TOPIC_ARN,
+                    Protocol="email",
+                    Endpoint=email
                 )
-            except Exception as e:
-                print(f"SNS Subscription Error: {e}")
 
-        flash(
-            "Sign up successful! Please check your email to confirm the subscription, then log in.",
-            "success",
-        )
-        return redirect(url_for("login"))
+            flash("Signup successful", "success")
+            return redirect(url_for("login"))
+
+        except Exception as e:
+            flash(f"Signup Error: {str(e)}", "error")
+            return redirect(url_for("signup"))
 
     return render_template("signup.html")
 
-
+# ───────── LOGIN ─────────
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -154,13 +108,12 @@ def login():
 
             if "Item" in response:
                 user = response["Item"]
-                # Check hashed password
                 if check_password_hash(user["password"], password):
                     session["user"] = email
-                    flash("Login successful!", "success")
                     return redirect(url_for("vote_page"))
 
-            flash("Invalid email or password.", "error")
+            flash("Invalid credentials", "error")
+
         except Exception as e:
             flash(f"Login Error: {str(e)}", "error")
 
@@ -168,56 +121,35 @@ def login():
 
     return render_template("login.html")
 
-
+# ───────── LOGOUT ─────────
 @app.route("/logout")
 def logout():
     session.pop("user", None)
-    flash("You have been logged out.", "success")
     return redirect(url_for("login"))
 
-
-@app.route("/vote", methods=["GET"])
+# ───────── VOTE PAGE ─────────
+@app.route("/vote")
 def vote_page():
     if "user" not in session:
-        flash("Please log in to view the voting page.", "error")
         return redirect(url_for("login"))
 
     email = session["user"]
 
-    try:
-        users_table = get_table("Users")
-        response = users_table.get_item(Key={"email": email})
-        user = response.get("Item")
+    users_table = get_table("Users")
+    user = users_table.get_item(Key={"email": email}).get("Item")
 
-        if not user:
-            session.pop("user", None)
-            return redirect(url_for("login"))
-
-        has_voted = user.get("hasVoted", False)
-        voted_for = user.get("votedFor", None)
-    except Exception as e:
-        flash(f"Error checking vote status: {str(e)}", "error")
-        has_voted = False
-        voted_for = None
-
-    # Find the full candidate details for the one the user voted for
-    voted_candidate = None
-    if voted_for:
-        for c in CANDIDATES:
-            if c["name"] == voted_for:
-                voted_candidate = c
-                break
+    has_voted = user.get("hasVoted", False)
+    voted_for = user.get("votedFor")
 
     return render_template(
         "vote.html",
-        has_voted=has_voted,
-        voted_for=voted_for,
-        voted_candidate=voted_candidate,
         candidates=CANDIDATES,
+        has_voted=has_voted,
+        voted_for=voted_for
     )
 
-
-@app.route("/cast_vote", methods=["POST"], endpoint="vote")
+# ───────── CAST VOTE ─────────
+@app.route("/cast_vote", methods=["POST"])
 def cast_vote():
     if "user" not in session:
         return redirect(url_for("login"))
@@ -225,60 +157,41 @@ def cast_vote():
     email = session["user"]
     candidate = request.form.get("candidate")
 
-    # Validate the candidate against our configured list
-    valid_names = [c["name"] for c in CANDIDATES]
-    if not candidate or candidate not in valid_names:
-        flash("No valid candidate selected.", "error")
-        return redirect(url_for("vote_page"))
-
     try:
-        # 1. Check & Set: Ensure user has not voted yet, gracefully handling DynamoDB condition
         users_table = get_table("Users")
-        dynamodb_client = boto3.client("dynamodb", region_name=REGION)
 
         users_table.update_item(
             Key={"email": email},
             UpdateExpression="SET hasVoted = :v, votedFor = :c",
-            ConditionExpression="hasVoted = :f OR attribute_not_exists(hasVoted)",
-            ExpressionAttributeValues={":v": True, ":f": False, ":c": candidate},
+            ConditionExpression="attribute_not_exists(hasVoted) OR hasVoted = :f",
+            ExpressionAttributeValues={
+                ":v": True,
+                ":f": False,
+                ":c": candidate
+            }
         )
-    except dynamodb_client.exceptions.ConditionalCheckFailedException:
-        flash("Our records show you have already voted!", "error")
-        return redirect(url_for("vote_page"))
-    except Exception as e:
-        flash(f"Vote record error: {str(e)}", "error")
-        return redirect(url_for("vote_page"))
 
-    # 2. Atomic increment of candidate's vote count in "Votes" table
-    try:
         votes_table = get_table("Votes")
         votes_table.update_item(
             Key={"candidate": candidate},
             UpdateExpression="ADD votes :inc",
-            ExpressionAttributeValues={":inc": 1},
+            ExpressionAttributeValues={":inc": 1}
         )
-    except Exception as e:
-        print(f"Vote increment error: {e}")
-        # Not rolling back the User's hasVoted for simplicity, but in production, consider transactions
 
-    # 3. Publish an SNSe mail confirmation asynchronously (or fast sync)
-    try:
         if SNS_TOPIC_ARN:
             sns_client.publish(
                 TopicArn=SNS_TOPIC_ARN,
-                Message=f"Hello,\\n\\nThis email confirms that your vote for {candidate} has been successfully recorded in the University Voting System.\\n\\nThank you for participating!",
-                Subject="Voting Confirmation - University Elections",
+                Message=f"You voted for {candidate}",
+                Subject="Vote Confirmation"
             )
-    except Exception as e:
-        print(f"SNS Publish Error: {e}")
 
-    flash(
-        "Your vote has been cast and recorded successfully! A confirmation email has been dispatched.",
-        "success",
-    )
+        flash("Vote recorded!", "success")
+
+    except Exception as e:
+        flash(f"Vote Error: {str(e)}", "error")
+
     return redirect(url_for("vote_page"))
 
-
+# ─────────────────────────────────────────────
 if __name__ == "__main__":
-    # Running locally default on port 5000
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
