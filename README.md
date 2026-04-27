@@ -4,7 +4,7 @@
 
 ![Screenshot](https://github.com/user-attachments/assets/8ae53aab-ae45-440f-a4d3-caac02b07a74)
 
-![Screenshot](https://github.com/user-attachments/assets/3a7b8379-3a6f-4504-8398-ca11db15cd01)
+<img width="1112" height="792" alt="Screenshot 2026-04-24 152719" src="https://github.com/user-attachments/assets/08600d47-5dcd-479b-ac0c-e680dd9dcc60" />
 
 ![Screenshot](https://github.com/user-attachments/assets/b7bd6a62-2091-4f3f-a881-02371f7fca56)
 
