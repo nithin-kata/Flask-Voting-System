@@ -1,0 +1,453 @@
+<!-- templates/index.html -->
+
+{% extends "base.html" %}
+
+{% block title %}BallotBox - Secure Voting System{% endblock %}
+
+{% block content %}
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        background:#fff;
+        font-family:'Inter', sans-serif !important;
+        overflow-x:hidden;
+        color:#000;
+        min-height:100vh;
+    }
+
+    /* REMOVE BASE CONTAINER */
+
+    .container{
+        max-width:100% !important;
+        width:100% !important;
+        padding:0 !important;
+        background:transparent !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+    }
+
+    /* HERO SECTION */
+
+    .landing-wrapper{
+        width:100%;
+        min-height:85vh;
+        padding:20px 50px 10px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    }
+
+    .landing-card{
+        width:100%;
+        max-width:1800px;
+        background:transparent;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:90px;
+    }
+
+    /* LEFT SECTION */
+
+    .landing-left{
+        flex:1.2;
+    }
+
+    .landing-left h1{
+        font-size:110px;
+        line-height:0.95;
+        font-weight:900;
+        color:#000;
+        margin-bottom:32px;
+        letter-spacing:-5px;
+    }
+
+    .landing-left p{
+        font-size:28px;
+        color:#444;
+        line-height:1.8;
+        margin-bottom:45px;
+        max-width:900px;
+    }
+
+    /* BUTTONS */
+
+    .landing-buttons{
+        display:flex;
+        gap:22px;
+        flex-wrap:wrap;
+    }
+
+    /* BUTTONS */
+
+.landing-buttons{
+    display:flex;
+    gap:26px;
+    flex-wrap:wrap;
+}
+
+.primary-btn{
+    text-decoration:none;
+    background:#000;
+    color:#fff;
+    padding:26px 60px;
+    border-radius:18px;
+    font-weight:700;
+    border:2px solid #000;
+    transition:0.3s ease;
+    font-size:28px;
+    min-width:220px;
+    text-align:center;
+}
+
+.primary-btn:hover{
+    background:#fff;
+    color:#000;
+}
+
+.secondary-btn{
+    text-decoration:none;
+    background:#fff;
+    color:#000;
+    padding:26px 60px;
+    border-radius:18px;
+    font-weight:700;
+    border:2px solid #000;
+    transition:0.3s ease;
+    font-size:28px;
+    min-width:220px;
+    text-align:center;
+}
+
+.secondary-btn:hover{
+    background:#000;
+    color:#fff;
+}
+
+    /* RIGHT SECTION */
+
+    .landing-right{
+        flex:1;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    }
+
+    .vote-box{
+        width:100%;
+        max-width:620px;
+        background:#fff;
+        border:3px solid #000;
+        border-radius:32px;
+        padding:55px 45px;
+    }
+
+    .vote-box h2{
+        text-align:center;
+        font-size:42px;
+        margin-bottom:45px;
+        color:#000;
+        font-weight:800;
+        letter-spacing:1px;
+    }
+
+    .vote-item{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:26px 0;
+        border-bottom:1px solid #ddd;
+        gap:20px;
+    }
+
+    .vote-item:last-child{
+        border-bottom:none;
+    }
+
+    .vote-item span{
+        font-size:28px;
+        font-weight:600;
+        color:#000;
+    }
+
+    .vote-status{
+        background:#000;
+        color:#fff;
+        padding:12px 22px;
+        border-radius:24px;
+        font-size:16px;
+        font-weight:700;
+        white-space:nowrap;
+        text-transform:uppercase;
+    }
+
+    /* WHY SECTION */
+
+    .why-section{
+        width:100%;
+        padding:0 50px 80px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .why-title{
+        font-size:72px;
+        font-weight:900;
+        color:#000;
+        margin-bottom:70px;
+        text-align:center;
+        letter-spacing:-3px;
+    }
+
+    .why-cards{
+        width:100%;
+        max-width:1600px;
+        display:flex;
+        justify-content:center;
+        gap:45px;
+        flex-wrap:wrap;
+    }
+
+    .why-card{
+        width:360px;
+        min-height:480px;
+        border:3px solid #000;
+        border-radius:32px;
+        padding:55px 40px;
+        text-align:center;
+        background:#fff;
+        transition:0.3s ease;
+    }
+
+    .why-card:hover{
+        transform:translateY(-8px);
+        box-shadow:0 12px 25px rgba(0,0,0,0.08);
+    }
+
+    .why-card h2{
+    font-size:42px;
+    line-height:1.2;
+    margin-bottom:35px;
+    font-weight:800;
+    color:#000;
+    word-break:keep-all;
+}
+
+    .why-card p{
+        font-size:24px;
+        line-height:1.8;
+        color:#444;
+    }
+
+    /* RESPONSIVE */
+
+    @media(max-width:1200px){
+
+        .landing-card{
+            flex-direction:column;
+            text-align:center;
+            gap:70px;
+        }
+
+        .landing-left h1{
+            font-size:72px;
+        }
+
+        .landing-left p{
+            margin:0 auto 40px;
+            font-size:22px;
+        }
+
+        .landing-buttons{
+            justify-content:center;
+        }
+
+        .vote-box{
+            max-width:100%;
+        }
+    }
+
+    @media(max-width:768px){
+
+        .landing-wrapper,
+        .why-section{
+            padding:25px;
+        }
+
+        .landing-left h1{
+            font-size:52px;
+            letter-spacing:-2px;
+        }
+
+        .landing-left p{
+            font-size:18px;
+        }
+
+        .primary-btn,
+        .secondary-btn{
+            font-size:16px;
+            padding:16px 34px;
+        }
+
+        .vote-box{
+            padding:35px 25px;
+        }
+
+        .vote-box h2{
+            font-size:28px;
+        }
+
+        .vote-item span{
+            font-size:18px;
+        }
+
+        .vote-status{
+            font-size:12px;
+            padding:8px 14px;
+        }
+
+        .why-title{
+            font-size:46px;
+        }
+
+        .why-card{
+            width:100%;
+            min-height:auto;
+            padding:40px 30px;
+        }
+
+        .why-card h2{
+            font-size:34px;
+        }
+
+        .why-card p{
+            font-size:18px;
+        }
+    }
+
+</style>
+
+<!-- HERO SECTION -->
+
+<div class="landing-wrapper">
+
+    <div class="landing-card">
+
+        <!-- LEFT SECTION -->
+
+        <div class="landing-left">
+
+            <h1>
+                BALLOT-BOX <br>
+                SECURE VOTING <br>
+                SYSTEM
+            </h1>
+
+            <p>
+                A secure and modern platform for conducting online
+                elections with transparency, simplicity, and real-time
+                results.
+            </p>
+
+            <div class="landing-buttons">
+                <a href="/login" class="primary-btn">Login</a>
+                <a href="/signup" class="secondary-btn">Sign Up</a>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SECTION -->
+
+        <div class="landing-right">
+
+            <div class="vote-box">
+
+                <h2>LIVE ELECTIONS</h2>
+
+                <div class="vote-item">
+                    <span>Student Council</span>
+                    <div class="vote-status">● Active</div>
+                </div>
+
+                <div class="vote-item">
+                    <span>Class Representative</span>
+                    <div class="vote-status">● Open</div>
+                </div>
+
+                <div class="vote-item">
+                    <span>University Poll</span>
+                    <div class="vote-status">● Running</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- WHY SECTION -->
+
+<section class="why-section">
+
+    <h1 class="why-title">WHY CHOOSE US?</h1>
+
+    <div class="why-cards">
+
+        <div class="why-card">
+
+            <h2>
+                Secure <br>
+                Voting
+            </h2>
+
+            <p>
+                Advanced authentication and secure
+                data handling ensure fair elections.
+            </p>
+
+        </div>
+
+        <div class="why-card">
+
+            <h2>
+                Real-Time <br>
+                Results
+            </h2>
+
+            <p>
+                Instantly monitor election outcomes
+                with live vote counting.
+            </p>
+
+        </div>
+
+        <div class="why-card">
+
+            <h2>
+                Easy <br>
+                Access
+            </h2>
+
+            <p>
+                Members can vote anytime and anywhere
+                using their accounts.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
